@@ -215,7 +215,7 @@ router.get("/:id", async (req, res) => {
     }
     res.json(contest);
   } catch (err) {
-    console.error(`Error fetching contest ID ${req.params.id}:`, err.message);
+    console.error("Error fetching contest ID %s:", req.params.id, err.message);
     res.status(500).json({ message: err.message });
   }
 });
