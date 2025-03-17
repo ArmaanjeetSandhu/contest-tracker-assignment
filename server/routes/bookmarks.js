@@ -83,12 +83,12 @@ router.post("/toggle", auth, async (req, res) => {
     }
     // Look for existing bookmark
     const existingBookmark = await Bookmark.findOne({
-      userId,
-      contestId,
+      userId: { $eq: userId },
+      contestId: { $eq: contestId },
     });
     if (existingBookmark) {
       // Remove bookmark if it exists
-      await Bookmark.findByIdAndDelete(existingBookmark._id);
+      await Bookmark.findByIdAndDelete({ _id: { $eq: existingBookmark._id } });
       res.json({
         message: "Bookmark removed",
         bookmarked: false,
@@ -97,8 +97,8 @@ router.post("/toggle", auth, async (req, res) => {
     } else {
       // Create bookmark if it doesn't exist
       const newBookmark = new Bookmark({
-        userId,
-        contestId,
+        userId: { $eq: userId },
+        contestId: { $eq: contestId },
       });
       await newBookmark.save();
       // Return populated bookmark
