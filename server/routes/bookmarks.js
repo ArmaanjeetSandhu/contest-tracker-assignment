@@ -4,10 +4,17 @@ const Bookmark = require("../models/Bookmark");
 const Contest = require("../models/Contest");
 const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
+const rateLimit = require("express-rate-limit");
+
+// Set up rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
 // @route   GET /api/bookmarks/:userId
 // @desc    Get all bookmarks for a user
 // @access  Public
-router.get("/:userId", async (req, res) => {
+router.get("/:userId", limiter, async (req, res) => {
   try {
     console.log(`Fetching bookmarks for user ID: ${req.params.userId}`);
     const bookmarks = await Bookmark.find({ userId: req.params.userId })
@@ -28,7 +35,7 @@ router.get("/:userId", async (req, res) => {
 // @route   POST /api/bookmarks
 // @desc    Create a new bookmark
 // @access  Private
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, limiter, async (req, res) => {
   try {
     const { userId, contestId } = req.body;
     if (!userId || !contestId) {
@@ -68,7 +75,7 @@ router.post("/", auth, async (req, res) => {
 // @route   POST /api/bookmarks/toggle
 // @desc    Toggle a bookmark (add if not exists, remove if exists)
 // @access  Private
-router.post("/toggle", auth, async (req, res) => {
+router.post("/toggle", auth, limiter, async (req, res) => {
   try {
     const { userId, contestId } = req.body;
     if (!userId || !contestId) {
@@ -122,7 +129,7 @@ router.post("/toggle", auth, async (req, res) => {
 // @route   DELETE /api/bookmarks/:bookmarkId
 // @desc    Delete a bookmark
 // @access  Private
-router.delete("/:bookmarkId", auth, async (req, res) => {
+router.delete("/:bookmarkId", auth, limiter, async (req, res) => {
   try {
     const bookmark = await Bookmark.findById(req.params.bookmarkId);
     if (!bookmark) {
