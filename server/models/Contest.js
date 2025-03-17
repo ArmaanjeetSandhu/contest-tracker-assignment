@@ -47,6 +47,11 @@ const ContestSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isTest: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
 });
 ContestSchema.index({ name: 1, platform: 1 }, { unique: true });
 ContestSchema.pre("save", function (next) {

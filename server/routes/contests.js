@@ -9,18 +9,18 @@ const {
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
 router.get("/", limiter, async (req, res) => {
   try {
     const { platforms, status, lastWeekOnly } = req.query;
-    const query = {};
+    const query = { isTest: { $ne: true } };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
     if (status) {
-      if (typeof status !== 'string') {
+      if (typeof status !== "string") {
         return res.status(400).send("Bad request");
       }
       query.status = { $in: status.split(",") };
@@ -35,15 +35,27 @@ router.get("/", limiter, async (req, res) => {
           query.status.$in = [query.status.$in];
         }
         query.$or = [
-          { status: { $in: query.status.$in.filter((s) => s !== "past") } },
-          { status: "past", endTime: { $gte: oneWeekAgo } },
+          {
+            status: { $in: query.status.$in.filter((s) => s !== "past") },
+            isTest: { $ne: true },
+          },
+          {
+            status: "past",
+            endTime: { $gte: oneWeekAgo },
+            isTest: { $ne: true },
+          },
         ];
         delete query.status;
       } else {
         query.$or = [
-          { status: { $ne: "past" } },
-          { status: "past", endTime: { $gte: oneWeekAgo } },
+          { status: { $ne: "past" }, isTest: { $ne: true } },
+          {
+            status: "past",
+            endTime: { $gte: oneWeekAgo },
+            isTest: { $ne: true },
+          },
         ];
+        delete query.isTest;
       }
     }
     console.log(
@@ -70,7 +82,7 @@ router.get("/", limiter, async (req, res) => {
 router.get("/upcoming", limiter, async (req, res) => {
   try {
     const { platforms } = req.query;
-    const query = { status: "upcoming" };
+    const query = { status: "upcoming", isTest: { $ne: true } };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -86,7 +98,7 @@ router.get("/upcoming", limiter, async (req, res) => {
 router.get("/ongoing", limiter, async (req, res) => {
   try {
     const { platforms } = req.query;
-    const query = { status: "ongoing" };
+    const query = { status: "ongoing", isTest: { $ne: true } };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -102,7 +114,7 @@ router.get("/ongoing", limiter, async (req, res) => {
 router.get("/past", limiter, async (req, res) => {
   try {
     const { platforms, limit, lastWeekOnly } = req.query;
-    const query = { status: "past" };
+    const query = { status: "past", isTest: { $ne: true } };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -171,6 +183,7 @@ router.post("/force-update-past", limiter, async (req, res) => {
     const shouldBePast = await Contest.find({
       endTime: { $lt: now },
       status: { $ne: "past" },
+      isTest: { $ne: true },
     });
     console.log(
       `Found ${shouldBePast.length} contests that should be marked as past`
@@ -186,7 +199,11 @@ router.post("/force-update-past", limiter, async (req, res) => {
         }))
       );
       const updateResult = await Contest.updateMany(
-        { endTime: { $lt: now }, status: { $ne: "past" } },
+        {
+          endTime: { $lt: now },
+          status: { $ne: "past" },
+          isTest: { $ne: true },
+        },
         { $set: { status: "past" } }
       );
       console.log(
@@ -209,7 +226,10 @@ router.post("/force-update-past", limiter, async (req, res) => {
 });
 router.get("/:id", limiter, async (req, res) => {
   try {
-    const contest = await Contest.findById(req.params.id);
+    const contest = await Contest.findOne({
+      _id: req.params.id,
+      isTest: { $ne: true },
+    });
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
@@ -230,7 +250,10 @@ router.post("/:id/solution", [limiter, auth, admin], async (req, res) => {
     if (!youtubeUrlPattern.test(solutionUrl)) {
       return res.status(400).json({ message: "Invalid YouTube URL format" });
     }
-    const contest = await Contest.findById(req.params.id);
+    const contest = await Contest.findOne({
+      _id: req.params.id,
+      isTest: { $ne: true },
+    });
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }

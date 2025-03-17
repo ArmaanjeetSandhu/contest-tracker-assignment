@@ -23,6 +23,7 @@ async function testReminderSystem() {
       url: "https://leetcode.com/contest/test",
       status: "upcoming",
       duration: 120,
+      isTest: true
     });
     await testContest.save();
     console.log(
