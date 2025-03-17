@@ -3,8 +3,15 @@ const router = express.Router();
 const Reminder = require("../models/Reminder");
 const Contest = require("../models/Contest");
 const auth = require("../middleware/auth");
+const rateLimit = require("express-rate-limit");
+
+// Configure rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
 // Get all reminders for a user
-router.get("/:userId", auth, async (req, res) => {
+router.get("/:userId", auth, limiter, async (req, res) => {
   try {
     const reminders = await Reminder.find({ userId: req.params.userId })
       .populate("contestId")
@@ -19,7 +26,7 @@ router.get("/:userId", auth, async (req, res) => {
   }
 });
 // Create a new reminder
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, limiter, async (req, res) => {
   try {
     const { userId, contestId, reminderTime } = req.body;
     // Validate inputs
@@ -73,7 +80,7 @@ router.post("/", auth, async (req, res) => {
   }
 });
 // Delete a reminder
-router.delete("/:reminderId", auth, async (req, res) => {
+router.delete("/:reminderId", auth, limiter, async (req, res) => {
   try {
     const reminder = await Reminder.findById(req.params.reminderId);
     if (!reminder) {
