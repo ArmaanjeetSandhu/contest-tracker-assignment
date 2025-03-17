@@ -27,7 +27,7 @@ router.get("/:userId", limiter, auth, async (req, res) => {
   }
 });
 // Create a new reminder
-router.post("/", auth, limiter, async (req, res) => {
+router.post("/", limiter, auth, async (req, res) => {
   try {
     const { userId, contestId, reminderTime } = req.body;
     // Validate inputs
@@ -84,7 +84,7 @@ router.post("/", auth, limiter, async (req, res) => {
   }
 });
 // Delete a reminder
-router.delete("/:reminderId", auth, limiter, async (req, res) => {
+router.delete("/:reminderId", limiter, auth, async (req, res) => {
   try {
     const reminder = await Reminder.findById(req.params.reminderId);
     if (!reminder) {
