@@ -3,10 +3,16 @@ const router = express.Router();
 const User = require("../models/User");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
 // @route   GET api/admin/users
 // @desc    Get all users
 // @access  Admin only
-router.get("/users", [auth, admin], async (req, res) => {
+router.get("/users", [auth, admin, limiter], async (req, res) => {
   try {
     const users = await User.find().select("-password").sort({ date: -1 });
     res.json(users);
@@ -18,7 +24,7 @@ router.get("/users", [auth, admin], async (req, res) => {
 // @route   DELETE api/admin/users/:id
 // @desc    Delete a user (admin only)
 // @access  Admin only
-router.delete("/users/:id", [auth, admin], async (req, res) => {
+router.delete("/users/:id", [auth, admin, limiter], async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
