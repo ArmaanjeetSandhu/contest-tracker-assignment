@@ -163,7 +163,7 @@ router.post("/update", limiter, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.post("/force-update-past", async (req, res) => {
+router.post("/force-update-past", limiter, async (req, res) => {
   try {
     console.log("Force updating past contests");
     const now = new Date();
