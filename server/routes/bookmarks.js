@@ -26,7 +26,8 @@ router.get("/:userId", limiter, async (req, res) => {
     res.json(bookmarks);
   } catch (err) {
     console.error(
-      `Error fetching bookmarks for user ${req.params.userId}:`,
+      "Error fetching bookmarks for user %s:",
+      req.params.userId,
       err.message
     );
     res.status(500).json({ message: err.message });
