@@ -23,6 +23,7 @@ router.get("/", limiter, auth, async (req, res) => {
 });
 router.post(
   "/login",
+  limiter,
   [
     check("email", "Please include a valid email").isEmail(),
     check("password", "Password is required").exists(),
