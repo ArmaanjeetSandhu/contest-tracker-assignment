@@ -19,7 +19,8 @@ router.get("/:userId", auth, limiter, async (req, res) => {
     res.json(reminders);
   } catch (err) {
     console.error(
-      `Error fetching reminders for user ${req.params.userId}:`,
+      "Error fetching reminders for user %s:",
+      req.params.userId,
       err.message
     );
     res.status(500).json({ message: err.message });
