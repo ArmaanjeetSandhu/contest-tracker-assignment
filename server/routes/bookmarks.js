@@ -52,9 +52,12 @@ router.post("/", auth, limiter, async (req, res) => {
       return res.status(404).json({ message: "Contest not found" });
     }
     // Check for existing bookmark
+    if (typeof userId !== "string") {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
     const existingBookmark = await Bookmark.findOne({
-      userId,
-      contestId,
+      userId: { $eq: userId },
+      contestId: { $eq: contestId },
     });
     if (existingBookmark) {
       return res.status(400).json({ message: "Contest already bookmarked" });
