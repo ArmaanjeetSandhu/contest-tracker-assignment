@@ -207,7 +207,7 @@ router.post("/force-update-past", limiter, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.get("/:id", async (req, res) => {
+router.get("/:id", limiter, async (req, res) => {
   try {
     const contest = await Contest.findById(req.params.id);
     if (!contest) {
