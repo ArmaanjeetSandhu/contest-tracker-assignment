@@ -77,7 +77,10 @@ router.post("/toggle", auth, async (req, res) => {
         .json({ message: "userId and contestId are required" });
     }
     // Ensure the contest exists
-    const contest = await Contest.findById(contestId);
+    if (typeof contestId !== "string") {
+      return res.status(400).json({ message: "Invalid contestId" });
+    }
+    const contest = await Contest.findById({ _id: { $eq: contestId } });
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
