@@ -12,7 +12,7 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 
-router.get("/", auth, limiter, async (req, res) => {
+router.get("/", limiter, auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     res.json(user);
