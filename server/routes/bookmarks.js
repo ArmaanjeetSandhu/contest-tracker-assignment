@@ -148,7 +148,8 @@ router.delete("/:bookmarkId", auth, limiter, async (req, res) => {
     res.json({ message: "Bookmark deleted successfully" });
   } catch (err) {
     console.error(
-      `Error deleting bookmark ${req.params.bookmarkId}:`,
+      "Error deleting bookmark %s:",
+      req.params.bookmarkId,
       err.message
     );
     res.status(500).json({ message: err.message });
