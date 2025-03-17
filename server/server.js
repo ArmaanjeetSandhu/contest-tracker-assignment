@@ -2,6 +2,7 @@ const express = require("express");
 const connectDB = require("./config/db");
 const cors = require("cors");
 const path = require("path");
+const RateLimit = require("express-rate-limit");
 const app = express();
 const remindersRoutes = require("./routes/reminders");
 const adminRoutes = require("./routes/admin");
@@ -18,6 +19,11 @@ app.use("/api/reminders", remindersRoutes);
 app.use("/api/admin", adminRoutes);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("client/build"));
+  const limiter = RateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // max 100 requests per windowMs
+  });
+  app.use(limiter);
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
   });
