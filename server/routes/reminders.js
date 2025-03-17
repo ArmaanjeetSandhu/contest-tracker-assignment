@@ -86,7 +86,8 @@ router.delete("/:reminderId", auth, async (req, res) => {
     });
   } catch (err) {
     console.error(
-      `Error deleting reminder ${req.params.reminderId}:`,
+      "Error deleting reminder %s:",
+      req.params.reminderId,
       err.message
     );
     res.status(500).json({ message: err.message });
