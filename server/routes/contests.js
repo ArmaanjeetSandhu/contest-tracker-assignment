@@ -12,7 +12,7 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
 });
-router.get("/", async (req, res) => {
+router.get("/", limiter, async (req, res) => {
   try {
     const { platforms, status, lastWeekOnly } = req.query;
     const query = {};
@@ -67,7 +67,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.get("/upcoming", async (req, res) => {
+router.get("/upcoming", limiter, async (req, res) => {
   try {
     const { platforms } = req.query;
     const query = { status: "upcoming" };
@@ -83,7 +83,7 @@ router.get("/upcoming", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.get("/ongoing", async (req, res) => {
+router.get("/ongoing", limiter, async (req, res) => {
   try {
     const { platforms } = req.query;
     const query = { status: "ongoing" };
@@ -99,7 +99,7 @@ router.get("/ongoing", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.get("/past", async (req, res) => {
+router.get("/past", limiter, async (req, res) => {
   try {
     const { platforms, limit, lastWeekOnly } = req.query;
     const query = { status: "past" };
@@ -146,7 +146,7 @@ router.get("/past", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.post("/update", async (req, res) => {
+router.post("/update", limiter, async (req, res) => {
   try {
     console.log("Manual contest update triggered");
     const statusUpdates = await updateContestStatus();
