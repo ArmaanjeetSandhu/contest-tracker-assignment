@@ -1,12 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const Contest = require("../models/Contest");
+const rateLimit = require("express-rate-limit");
 const {
   fetchAllContests,
   updateContestStatus,
 } = require("../services/contestFetcher");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
 router.get("/", async (req, res) => {
   try {
     const { platforms, status, lastWeekOnly } = req.query;
@@ -214,7 +219,7 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-router.post("/:id/solution", [auth, admin], async (req, res) => {
+router.post("/:id/solution", [limiter, auth, admin], async (req, res) => {
   try {
     const { solutionUrl } = req.body;
     if (!solutionUrl) {
