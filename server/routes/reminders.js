@@ -50,9 +50,12 @@ router.post("/", auth, limiter, async (req, res) => {
         });
     }
     // Check if a reminder already exists
+    if (typeof userId !== "string" || typeof contestId !== "string") {
+      return res.status(400).json({ message: "Invalid userId or contestId" });
+    }
     const existingReminder = await Reminder.findOne({
-      userId,
-      contestId,
+      userId: { $eq: userId },
+      contestId: { $eq: contestId },
     });
     if (existingReminder) {
       // Update existing reminder
