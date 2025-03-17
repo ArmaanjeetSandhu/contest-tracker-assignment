@@ -8,8 +8,16 @@ const auth = require("../../middleware/auth");
 const admin = require("../../middleware/admin");
 const User = require("../../models/User");
 const mongoose = require("mongoose");
+const rateLimit = require("express-rate-limit");
+
+// Set up rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // max 100 requests per windowMs
+});
 router.post(
   "/",
+  limiter,
   [
     check("name", "Name is required").not().isEmpty(),
     check("email", "Please include a valid email").isEmail(),
@@ -63,6 +71,7 @@ router.post(
 );
 router.post(
   "/admin",
+  limiter,
   [
     auth,
     admin,
@@ -96,7 +105,6 @@ router.post(
       });
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
-      await user.save();
       res.json({ msg: "Admin user created successfully" });
     } catch (err) {
       console.error(err.message);
@@ -107,7 +115,7 @@ router.post(
 // @route   DELETE api/users
 // @desc    Delete the current user's account
 // @access  Private
-router.delete("/", auth, async (req, res) => {
+router.delete("/", auth, limiter, async (req, res) => {
   try {
     // Get user ID from the auth middleware
     const userId = req.user.id;
