@@ -1,0 +1,7 @@
+{
+  "mongoURI": "mongodb+srv://armaanjeetsandhu430:vmJsA36q1KeyJt7y@contest-tracker.ul7fm.mongodb.net/?retryWrites=true&w=majority",
+  "jwtSecret": "e369f027d52abd90ec545e82baa076e1ba016968f00fd924068176037ae43c043cefa8a5600c9128edad13d1cac72ab8aa5fe70b5fac6b34dd73a5524c501344",
+  "emailService": "gmail",
+  "emailUser": "solomontruffle@gmail.com",
+  "emailPassword": "gwbf gcyt zeuz htil"
+}

@@ -1,0 +1,196 @@
+.user-management-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.user-management-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.user-management-header h2 {
+  color: var(--text-primary);
+  font-family: "DM Serif Display", serif;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.user-management-header p {
+  color: var(--text-secondary);
+}
+.user-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+.stat-box {
+  flex: 1;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s ease;
+}
+.stat-box:hover {
+  transform: translateY(-5px);
+}
+.stat-box h3 {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+.stat-box p {
+  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: bold;
+}
+.users-table-container {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+}
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.users-table th,
+.users-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+.users-table th {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+.users-table tr:hover td {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+[data-theme="dark"] .users-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.admin-row {
+  background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.role-badge.admin {
+  background-color: rgba(var(--primary-color-rgb), 0.15);
+  color: var(--primary-color);
+}
+.role-badge.user {
+  background-color: rgba(var(--text-secondary-rgb), 0.1);
+  color: var(--text-secondary);
+}
+.role-badge i {
+  margin-right: 0.35rem;
+}
+.delete-user-btn {
+  background-color: rgba(var(--danger-color-rgb), 0.1);
+  color: var(--danger-color);
+  border: none;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.delete-user-btn:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+.current-user-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  background-color: rgba(var(--accent-1-rgb), 0.1);
+  color: var(--accent-1);
+}
+.current-user-badge i {
+  margin-right: 0.35rem;
+}
+.error-message {
+  background-color: rgba(var(--danger-color-rgb), 0.1);
+  color: var(--danger-color);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+.error-message i {
+  margin-right: 0.5rem;
+}
+.success-message {
+  background-color: rgba(90, 147, 103, 0.1);
+  color: var(--success-color);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+.success-message i {
+  margin-right: 0.5rem;
+}
+.retry-button {
+  margin-left: auto;
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  padding: 0.35rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+.retry-button:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+.retry-button i {
+  margin-right: 0.35rem;
+}
+:root {
+  --primary-color-rgb: 61, 122, 158;
+  --danger-color-rgb: 199, 77, 77;
+  --text-secondary-rgb: 74, 85, 104;
+  --accent-1-rgb: 227, 112, 45;
+}
+[data-theme="dark"] {
+  --primary-color-rgb: 61, 122, 158;
+  --danger-color-rgb: 220, 53, 69;
+  --text-secondary-rgb: 204, 204, 204;
+  --accent-1-rgb: 227, 112, 45;
+}
+@media screen and (max-width: 768px) {
+  .user-stats {
+    flex-direction: column;
+  }
+  .users-table {
+    display: block;
+    overflow-x: auto;
+  }
+  .users-table th,
+  .users-table td {
+    padding: 0.7rem;
+  }
+}

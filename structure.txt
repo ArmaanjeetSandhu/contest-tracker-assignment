@@ -1,0 +1,85 @@
+📂 .
+├── 📄 .gitignore
+├── 📄 structure.txt
+├── 📁 client
+│   ├── 📄 index.html
+│   ├── 📄 eslint.config.js
+│   ├── 📄 vite.config.js
+│   ├── 📄 package-lock.json
+│   ├── 📄 package.json
+│   ├── 📁 public
+│   └── 📁 src
+│       ├── 📄 App.css
+│       ├── 📄 index.css
+│       ├── 📄 App.jsx
+│       ├── 📄 main.jsx
+│       ├── 📁 assets
+│       ├── 📁 components
+│       │   ├── 📄 AccountSettings.jsx
+│       │   ├── 📄 Bookmarks.jsx
+│       │   ├── 📄 ContestItem.jsx
+│       │   ├── 📄 ContestList.jsx
+│       │   ├── 📄 FilterPanel.jsx
+│       │   ├── 📄 Navbar.jsx
+│       │   ├── 📄 SolutionUrlForm.jsx
+│       │   ├── 📄 ThemeToggle.jsx
+│       │   ├── 📁 admin
+│       │   │   └── 📄 UserManagement.jsx
+│       │   ├── 📁 auth
+│       │   │   ├── 📄 AdminPanel.jsx
+│       │   │   ├── 📄 Login.jsx
+│       │   │   └── 📄 Register.jsx
+│       │   └── 📁 routing
+│       │       ├── 📄 AdminRoute.jsx
+│       │       └── 📄 PrivateRoute.jsx
+│       ├── 📁 context
+│       │   ├── 📄 ThemeContext.js
+│       │   └── 📄 ThemeProvider.jsx
+│       ├── 📁 redux
+│       │   ├── 📄 authSlice.js
+│       │   ├── 📄 bookmarksSlice.js
+│       │   ├── 📄 contestsSlice.js
+│       │   ├── 📄 remindersSlice.js
+│       │   ├── 📄 store.js
+│       │   └── 📄 types.js
+│       ├── 📁 styles
+│       │   ├── 📄 AccountSettings.css
+│       │   ├── 📄 Auth.css
+│       │   ├── 📄 main.css
+│       │   ├── 📄 SolutionForm.css
+│       │   └── 📄 UserManagement.css
+│       └── 📁 utils
+│           └── 📄 setAuthToken.js
+└── 📁 server
+    ├── 📄 generate-password.js
+    ├── 📄 server.js
+    ├── 📄 package-lock.json
+    ├── 📄 package.json
+    ├── 📁 config
+    │   ├── 📄 db.js
+    │   └── 📄 default.json
+    ├── 📁 middleware
+    │   ├── 📄 admin.js
+    │   └── 📄 auth.js
+    ├── 📁 models
+    │   ├── 📄 Bookmark.js
+    │   ├── 📄 Contest.js
+    │   ├── 📄 Reminder.js
+    │   └── 📄 User.js
+    ├── 📁 routes
+    │   ├── 📄 admin.js
+    │   ├── 📄 bookmarks.js
+    │   ├── 📄 contests.js
+    │   ├── 📄 reminders.js
+    │   └── 📁 api
+    │       ├── 📄 auth.js
+    │       └── 📄 users.js
+    ├── 📁 scripts
+    │   ├── 📄 list-users.js
+    │   └── 📄 test-reminder.js
+    └── 📁 services
+        ├── 📄 codechefClipboardParser.js
+        ├── 📄 codechefPuppeteer.js
+        ├── 📄 contestFetcher.js
+        ├── 📄 emailService.js
+        └── 📄 reminderScheduler.js
