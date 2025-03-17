@@ -15,6 +15,9 @@ router.get("/", async (req, res) => {
       query.platform = { $in: platforms.split(",") };
     }
     if (status) {
+      if (typeof status !== 'string') {
+        return res.status(400).send("Bad request");
+      }
       query.status = { $in: status.split(",") };
     }
     if (lastWeekOnly === "true" && (!status || status.includes("past"))) {
