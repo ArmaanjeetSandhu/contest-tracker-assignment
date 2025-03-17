@@ -244,7 +244,8 @@ router.post("/:id/solution", [limiter, auth, admin], async (req, res) => {
     res.json(contest);
   } catch (err) {
     console.error(
-      `Error updating solution for contest ${req.params.id}:`,
+      "Error updating solution for contest %s:",
+      req.params.id,
       err.message
     );
     res.status(500).json({ message: err.message });
