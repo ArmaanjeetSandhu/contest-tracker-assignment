@@ -11,7 +11,7 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 // Get all reminders for a user
-router.get("/:userId", auth, limiter, async (req, res) => {
+router.get("/:userId", limiter, auth, async (req, res) => {
   try {
     const reminders = await Reminder.find({ userId: req.params.userId })
       .populate("contestId")
