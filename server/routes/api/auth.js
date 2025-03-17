@@ -6,7 +6,13 @@ const config = require("config");
 const { check, validationResult } = require("express-validator");
 const auth = require("../../middleware/auth");
 const User = require("../../models/User");
-router.get("/", auth, async (req, res) => {
+const rateLimit = require("express-rate-limit");
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
+router.get("/", auth, limiter, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     res.json(user);
