@@ -29,7 +29,7 @@ router.post("/", auth, async (req, res) => {
         .json({ message: "userId, contestId, and reminderTime are required" });
     }
     // Check if the contest exists
-    const contest = await Contest.findById(contestId);
+    const contest = await Contest.findById({ _id: { $eq: contestId } });
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
