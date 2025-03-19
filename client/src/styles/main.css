@@ -1140,3 +1140,231 @@ ul {
     display: none;
   }
 }
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
+.view-toggle-container {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+.view-toggle-single {
+  display: flex;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+.view-toggle-btn {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-color);
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+.view-toggle-btn:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+.view-toggle-btn:active {
+  transform: translateY(1px);
+}
+.bookmarks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.contest-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+}
+.contest-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+.contest-table th,
+.contest-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+.contest-table th {
+  background-color: rgba(0, 0, 0, 0.03);
+  font-weight: 500;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+}
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+.sortable-header:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+[data-theme="dark"] .sortable-header:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.sortable-header i {
+  margin-left: 5px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+.text-muted {
+  opacity: 0.4;
+}
+.ml-1 {
+  margin-left: 4px;
+}
+[data-theme="dark"] .contest-table th {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.contest-table tr:last-child td {
+  border-bottom: none;
+}
+.contest-table tr:hover td {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+[data-theme="dark"] .contest-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+.contest-table tr.upcoming td:first-child {
+  border-left: 4px solid var(--success-color);
+}
+.contest-table tr.ongoing td:first-child {
+  border-left: 4px solid var(--warning-color);
+}
+.contest-table tr.past td:first-child {
+  border-left: 4px solid var(--danger-color);
+}
+.contest-name-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.platform-label-small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  width: fit-content;
+}
+.platform-label-small.platform-codeforces {
+  background-color: rgba(61, 122, 158, 0.1);
+  color: var(--codeforces-color);
+}
+.platform-label-small.platform-codechef {
+  background-color: rgba(227, 112, 45, 0.1);
+  color: var(--codechef-color);
+}
+.platform-label-small.platform-leetcode {
+  background-color: rgba(217, 165, 52, 0.1);
+  color: var(--leetcode-color);
+}
+.time-small {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+.actions-cell {
+  width: 120px;
+}
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+.contest-link-small,
+.solution-link-small {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.contest-link-small {
+  background-color: var(--primary-color);
+  color: white;
+}
+.contest-link-small:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+.solution-link-small {
+  background-color: var(--danger-color);
+  color: white;
+}
+.solution-link-small:hover {
+  background-color: #ff0000;
+  transform: translateY(-2px);
+}
+.bookmark-btn-small {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+[data-theme="dark"] .bookmark-btn-small {
+  background: rgba(255, 255, 255, 0.05);
+}
+.bookmark-btn-small:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--accent-3);
+}
+[data-theme="dark"] .bookmark-btn-small:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.bookmark-btn-small.bookmarked {
+  color: var(--accent-3);
+}
+@media screen and (max-width: 768px) {
+  .header-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .view-toggle-container {
+    margin-left: 0;
+    margin-top: 15px;
+    width: 100%;
+    justify-content: center;
+  }
+  .bookmarks-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .contest-table th,
+  .contest-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+}

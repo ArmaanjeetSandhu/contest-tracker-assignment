@@ -4,13 +4,10 @@ const Reminder = require("../models/Reminder");
 const Contest = require("../models/Contest");
 const auth = require("../middleware/auth");
 const rateLimit = require("express-rate-limit");
-
-// Configure rate limiter: maximum of 100 requests per 15 minutes
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
-// Get all reminders for a user
 router.get("/:userId", limiter, auth, async (req, res) => {
   try {
     const reminders = await Reminder.find({ userId: req.params.userId })
@@ -26,39 +23,31 @@ router.get("/:userId", limiter, auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// Create a new reminder
 router.post("/", limiter, auth, async (req, res) => {
   try {
     const { userId, contestId, reminderTime } = req.body;
-    // Validate inputs
     if (!userId || !contestId || !reminderTime) {
       return res
         .status(400)
         .json({ message: "userId, contestId, and reminderTime are required" });
     }
-    // Check if the contest exists
-    const contest = await Contest.findById({ _id: { $eq: contestId } });
+    const contest = await Contest.findById(contestId);
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
-    // Check if the contest is in the future
     if (new Date(contest.startTime) <= new Date()) {
-      return res
-        .status(400)
-        .json({
-          message: "Cannot set reminder for a contest that has already started",
-        });
+      return res.status(400).json({
+        message: "Cannot set reminder for a contest that has already started",
+      });
     }
-    // Check if a reminder already exists
     if (typeof userId !== "string" || typeof contestId !== "string") {
       return res.status(400).json({ message: "Invalid userId or contestId" });
     }
     const existingReminder = await Reminder.findOne({
-      userId: { $eq: userId },
-      contestId: { $eq: contestId },
+      userId: userId,
+      contestId: contestId,
     });
     if (existingReminder) {
-      // Update existing reminder
       existingReminder.reminderTime = reminderTime;
       existingReminder.sent = false;
       await existingReminder.save();
@@ -67,7 +56,6 @@ router.post("/", limiter, auth, async (req, res) => {
       ).populate("contestId");
       return res.json(populatedReminder);
     }
-    // Create new reminder
     const newReminder = new Reminder({
       userId,
       contestId,
@@ -83,7 +71,6 @@ router.post("/", limiter, auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// Delete a reminder
 router.delete("/:reminderId", limiter, auth, async (req, res) => {
   try {
     const reminder = await Reminder.findById(req.params.reminderId);

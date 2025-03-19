@@ -12,7 +12,9 @@ import {
 } from "../redux/contestsSlice";
 import { fetchBookmarks, toggleBookmark } from "../redux/bookmarksSlice";
 import ContestItem from "./ContestItem";
+import ContestTableView from "./ContestTableView";
 import FilterPanel from "./FilterPanel";
+import ViewToggle from "./ViewToggle";
 function ContestList() {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -21,13 +23,22 @@ function ContestList() {
   );
   const { bookmarks } = useSelector((state) => state.bookmarks);
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [viewMode, setViewMode] = useState("card");
   useEffect(() => {
+    const savedView = localStorage.getItem("preferredView");
+    if (savedView && (savedView === "card" || savedView === "table")) {
+      setViewMode(savedView);
+    }
     dispatch(fetchAllContests());
     dispatch(fetchBookmarks());
     return () => {
       dispatch(clearError());
     };
   }, [dispatch]);
+  const handleViewChange = (newView) => {
+    setViewMode(newView);
+    localStorage.setItem("preferredView", newView);
+  };
   const handleFilterChange = (newFilters) => {
     dispatch(setFilters(newFilters));
     dispatch(applyFilters());
@@ -118,7 +129,12 @@ function ContestList() {
         </div>
       )}
       <div className="contest-header">
-        <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
+        <div className="header-controls">
+          <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
+          <div className="view-toggle-container">
+            <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
+          </div>
+        </div>
       </div>
       <div className="tab-container">
         <div className="tabs">
@@ -161,16 +177,27 @@ function ContestList() {
           </button>
         </div>
       ) : (
-        <div className="contest-grid">
-          {displayedContests.map((contest) => (
-            <ContestItem
-              key={contest._id}
-              contest={contest}
-              isBookmarked={isBookmarked(contest._id)}
-              onBookmarkToggle={() => handleBookmarkToggle(contest._id)}
+        <>
+          {viewMode === "card" && (
+            <div className="contest-grid">
+              {displayedContests.map((contest) => (
+                <ContestItem
+                  key={contest._id}
+                  contest={contest}
+                  isBookmarked={isBookmarked(contest._id)}
+                  onBookmarkToggle={() => handleBookmarkToggle(contest._id)}
+                />
+              ))}
+            </div>
+          )}
+          {viewMode === "table" && (
+            <ContestTableView 
+              contests={displayedContests} 
+              isBookmarkedFunc={isBookmarked}
+              onBookmarkToggle={handleBookmarkToggle}
             />
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

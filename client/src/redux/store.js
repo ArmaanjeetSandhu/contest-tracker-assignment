@@ -1,14 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
+import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import contestsReducer from "./contestsSlice";
-import bookmarksReducer from "./bookmarksSlice";
 import authReducer from "./authSlice";
+import bookmarksReducer from "./bookmarksSlice";
+import contestsReducer from "./contestsSlice";
 import remindersReducer from "./remindersSlice";
+// Include user in the whitelist to persist user data across page refreshes
 const authPersistConfig = {
   key: "auth",
   storage,
-  whitelist: ["token", "isAuthenticated"],
+  whitelist: ["token", "isAuthenticated", "user"],
 };
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const store = configureStore({

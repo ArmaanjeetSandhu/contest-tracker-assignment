@@ -1,22 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import {
+  clearBookmarkError,
   fetchBookmarks,
   toggleBookmark,
-  clearBookmarkError,
 } from "../redux/bookmarksSlice";
 import ContestItem from "./ContestItem";
-import { Link } from "react-router-dom";
+import ContestTableView from "./ContestTableView";
+import ViewToggle from "./ViewToggle";
 function Bookmarks() {
   const dispatch = useDispatch();
   const { bookmarks, loading, error } = useSelector((state) => state.bookmarks);
   const [activeStatus, setActiveStatus] = useState("all");
+  const [viewMode, setViewMode] = useState("card");
   useEffect(() => {
+    const savedView = localStorage.getItem("preferredView");
+    if (savedView && (savedView === "card" || savedView === "table")) {
+      setViewMode(savedView);
+    }
     dispatch(fetchBookmarks());
     return () => {
       dispatch(clearBookmarkError());
     };
   }, [dispatch]);
+  const handleViewChange = (newView) => {
+    setViewMode(newView);
+    localStorage.setItem("preferredView", newView);
+  };
   const handleBookmarkToggle = (contestId) => {
     dispatch(toggleBookmark(contestId));
   };
@@ -53,9 +64,19 @@ function Bookmarks() {
   return (
     <div className="bookmarks-page">
       <div className="bookmarks-header">
-        <h2>
-          <i className="fas fa-bookmark"></i> Bookmarked Contests
-        </h2>
+        <div className="bookmarks-title">
+          <h2>
+            <i className="fas fa-bookmark"></i> Bookmarked Contests
+          </h2>
+        </div>
+        {bookmarks.length > 0 && (
+          <div className="view-toggle-container">
+            <ViewToggle
+              currentView={viewMode}
+              onViewChange={handleViewChange}
+            />
+          </div>
+        )}
       </div>
       {bookmarks.length === 0 ? (
         <div className="no-bookmarks">
@@ -106,20 +127,33 @@ function Bookmarks() {
               </button>
             </div>
           ) : (
-            <div className="contest-grid">
-              {filteredBookmarks.map((bookmark) =>
-                bookmark.contestId ? (
-                  <ContestItem
-                    key={bookmark._id}
-                    contest={bookmark.contestId}
-                    isBookmarked={true}
-                    onBookmarkToggle={() =>
-                      handleBookmarkToggle(bookmark.contestId._id)
-                    }
-                  />
-                ) : null
+            <>
+              {viewMode === "card" && (
+                <div className="contest-grid">
+                  {filteredBookmarks.map((bookmark) =>
+                    bookmark.contestId ? (
+                      <ContestItem
+                        key={bookmark._id}
+                        contest={bookmark.contestId}
+                        isBookmarked={true}
+                        onBookmarkToggle={() =>
+                          handleBookmarkToggle(bookmark.contestId._id)
+                        }
+                      />
+                    ) : null
+                  )}
+                </div>
               )}
-            </div>
+              {viewMode === "table" && (
+                <ContestTableView
+                  contests={filteredBookmarks
+                    .map((bookmark) => bookmark.contestId)
+                    .filter(Boolean)}
+                  isBookmarkedFunc={() => true}
+                  onBookmarkToggle={handleBookmarkToggle}
+                />
+              )}
+            </>
           )}
         </>
       )}

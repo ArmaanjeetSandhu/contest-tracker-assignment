@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { register, clearError } from "../../redux/authSlice";
+import { Link, useNavigate } from "react-router-dom";
+import { clearError, loadUser, register } from "../../redux/authSlice";
 import "../../styles/Auth.css";
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -61,10 +61,15 @@ const Register = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      dispatch(register({ name, email, password }));
+      try {
+        await dispatch(register({ name, email, password })).unwrap();
+        dispatch(loadUser());
+      } catch (err) {
+        console.error("Registration failed:", err);
+      }
     }
   };
   return (

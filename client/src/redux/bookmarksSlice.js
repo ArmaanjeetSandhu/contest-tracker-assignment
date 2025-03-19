@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "../utils/apiConfig";
 export const fetchBookmarks = createAsyncThunk(
   "bookmarks/fetchAll",
   async (_, { rejectWithValue, getState }) => {
@@ -26,7 +26,10 @@ export const toggleBookmark = createAsyncThunk(
     try {
       const userId = getState().auth.user?._id;
       if (!userId) {
-        return rejectWithValue("User not authenticated");
+        console.error("User ID not found in state");
+        return rejectWithValue(
+          "User not authenticated or user data not loaded"
+        );
       }
       console.log(
         `Toggling bookmark for contestId: ${contestId}, userId: ${userId}`
@@ -39,7 +42,13 @@ export const toggleBookmark = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error("Error toggling bookmark:", error);
-      return rejectWithValue(error.response?.data?.message || error.message);
+      const errorMessage = error.response?.data?.message || error.message;
+      // If error is related to auth, handle it better
+      if (errorMessage.includes("auth") || error.response?.status === 401) {
+        // You could dispatch additional actions here if needed
+        console.error("Authentication error when toggling bookmark");
+      }
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -49,7 +58,10 @@ export const addBookmark = createAsyncThunk(
     try {
       const userId = getState().auth.user?._id;
       if (!userId) {
-        return rejectWithValue("User not authenticated");
+        console.error("User ID not found in state");
+        return rejectWithValue(
+          "User not authenticated or user data not loaded"
+        );
       }
       const response = await axios.post(`${API_URL}/bookmarks`, {
         userId,
@@ -57,6 +69,7 @@ export const addBookmark = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
+      console.error("Error adding bookmark:", error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -68,6 +81,7 @@ export const removeBookmark = createAsyncThunk(
       await axios.delete(`${API_URL}/bookmarks/${bookmarkId}`);
       return bookmarkId;
     } catch (error) {
+      console.error("Error removing bookmark:", error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }

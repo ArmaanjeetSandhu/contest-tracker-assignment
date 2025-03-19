@@ -15,7 +15,7 @@ const limiter = rateLimit({
 router.get("/", limiter, async (req, res) => {
   try {
     const { platforms, status, lastWeekOnly } = req.query;
-    const query = { isTest: { $ne: true } };
+    const query = {};
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -35,27 +35,21 @@ router.get("/", limiter, async (req, res) => {
           query.status.$in = [query.status.$in];
         }
         query.$or = [
-          {
-            status: { $in: query.status.$in.filter((s) => s !== "past") },
-            isTest: { $ne: true },
-          },
+          { status: { $in: query.status.$in.filter((s) => s !== "past") } },
           {
             status: "past",
             endTime: { $gte: oneWeekAgo },
-            isTest: { $ne: true },
           },
         ];
         delete query.status;
       } else {
         query.$or = [
-          { status: { $ne: "past" }, isTest: { $ne: true } },
+          { status: { $ne: "past" } },
           {
             status: "past",
             endTime: { $gte: oneWeekAgo },
-            isTest: { $ne: true },
           },
         ];
-        delete query.isTest;
       }
     }
     console.log(
@@ -82,7 +76,7 @@ router.get("/", limiter, async (req, res) => {
 router.get("/upcoming", limiter, async (req, res) => {
   try {
     const { platforms } = req.query;
-    const query = { status: "upcoming", isTest: { $ne: true } };
+    const query = { status: "upcoming" };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -98,7 +92,7 @@ router.get("/upcoming", limiter, async (req, res) => {
 router.get("/ongoing", limiter, async (req, res) => {
   try {
     const { platforms } = req.query;
-    const query = { status: "ongoing", isTest: { $ne: true } };
+    const query = { status: "ongoing" };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -114,7 +108,7 @@ router.get("/ongoing", limiter, async (req, res) => {
 router.get("/past", limiter, async (req, res) => {
   try {
     const { platforms, limit, lastWeekOnly } = req.query;
-    const query = { status: "past", isTest: { $ne: true } };
+    const query = { status: "past" };
     if (platforms) {
       query.platform = { $in: platforms.split(",") };
     }
@@ -183,7 +177,6 @@ router.post("/force-update-past", limiter, async (req, res) => {
     const shouldBePast = await Contest.find({
       endTime: { $lt: now },
       status: { $ne: "past" },
-      isTest: { $ne: true },
     });
     console.log(
       `Found ${shouldBePast.length} contests that should be marked as past`
@@ -202,7 +195,6 @@ router.post("/force-update-past", limiter, async (req, res) => {
         {
           endTime: { $lt: now },
           status: { $ne: "past" },
-          isTest: { $ne: true },
         },
         { $set: { status: "past" } }
       );
@@ -228,7 +220,6 @@ router.get("/:id", limiter, async (req, res) => {
   try {
     const contest = await Contest.findOne({
       _id: req.params.id,
-      isTest: { $ne: true },
     });
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
@@ -252,7 +243,6 @@ router.post("/:id/solution", [limiter, auth, admin], async (req, res) => {
     }
     const contest = await Contest.findOne({
       _id: req.params.id,
-      isTest: { $ne: true },
     });
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });

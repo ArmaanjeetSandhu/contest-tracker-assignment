@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login, clearError } from "../../redux/authSlice";
+import { useNavigate } from "react-router-dom";
+import { clearError, loadUser, login } from "../../redux/authSlice";
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -52,10 +52,15 @@ const Login = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      dispatch(login({ email, password }));
+      try {
+        await dispatch(login({ email, password })).unwrap();
+        dispatch(loadUser());
+      } catch (err) {
+        console.error("Login failed:", err);
+      }
     }
   };
   return (

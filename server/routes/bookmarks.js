@@ -5,15 +5,10 @@ const Contest = require("../models/Contest");
 const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
 const rateLimit = require("express-rate-limit");
-
-// Set up rate limiter: maximum of 100 requests per 15 minutes
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
-// @route   GET /api/bookmarks/:userId
-// @desc    Get all bookmarks for a user
-// @access  Public
 router.get("/:userId", limiter, async (req, res) => {
   try {
     console.log(`Fetching bookmarks for user ID: ${req.params.userId}`);
@@ -33,9 +28,6 @@ router.get("/:userId", limiter, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// @route   POST /api/bookmarks
-// @desc    Create a new bookmark
-// @access  Private
 router.post("/", auth, limiter, async (req, res) => {
   try {
     const { userId, contestId } = req.body;
@@ -44,32 +36,28 @@ router.post("/", auth, limiter, async (req, res) => {
         .status(400)
         .json({ message: "userId and contestId are required" });
     }
-    // Ensure the contest exists
     if (typeof contestId !== "string") {
       return res.status(400).json({ message: "Invalid contestId" });
     }
-    const contest = await Contest.findById({ _id: { $eq: contestId } });
+    const contest = await Contest.findById(contestId);
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
-    // Check for existing bookmark
     if (typeof userId !== "string") {
       return res.status(400).json({ message: "Invalid userId" });
     }
     const existingBookmark = await Bookmark.findOne({
-      userId: { $eq: userId },
-      contestId: { $eq: contestId },
+      userId: userId,
+      contestId: contestId,
     });
     if (existingBookmark) {
       return res.status(400).json({ message: "Contest already bookmarked" });
     }
-    // Create new bookmark
     const newBookmark = new Bookmark({
       userId,
       contestId,
     });
     await newBookmark.save();
-    // Return populated bookmark
     const populatedBookmark = await Bookmark.findById(newBookmark._id).populate(
       "contestId"
     );
@@ -79,9 +67,6 @@ router.post("/", auth, limiter, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// @route   POST /api/bookmarks/toggle
-// @desc    Toggle a bookmark (add if not exists, remove if exists)
-// @access  Private
 router.post("/toggle", auth, limiter, async (req, res) => {
   try {
     const { userId, contestId } = req.body;
@@ -90,35 +75,30 @@ router.post("/toggle", auth, limiter, async (req, res) => {
         .status(400)
         .json({ message: "userId and contestId are required" });
     }
-    // Ensure the contest exists
     if (typeof contestId !== "string") {
       return res.status(400).json({ message: "Invalid contestId" });
     }
-    const contest = await Contest.findById({ _id: { $eq: contestId } });
+    const contest = await Contest.findById(contestId);
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
-    // Look for existing bookmark
     const existingBookmark = await Bookmark.findOne({
-      userId: { $eq: userId },
-      contestId: { $eq: contestId },
+      userId: userId,
+      contestId: contestId,
     });
     if (existingBookmark) {
-      // Remove bookmark if it exists
-      await Bookmark.findByIdAndDelete({ _id: { $eq: existingBookmark._id } });
+      await Bookmark.findByIdAndDelete(existingBookmark._id);
       res.json({
         message: "Bookmark removed",
         bookmarked: false,
         bookmarkId: existingBookmark._id,
       });
     } else {
-      // Create bookmark if it doesn't exist
       const newBookmark = new Bookmark({
-        userId: { $eq: userId },
-        contestId: { $eq: contestId },
+        userId,
+        contestId,
       });
       await newBookmark.save();
-      // Return populated bookmark
       const populatedBookmark = await Bookmark.findById(
         newBookmark._id
       ).populate("contestId");
@@ -133,16 +113,12 @@ router.post("/toggle", auth, limiter, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-// @route   DELETE /api/bookmarks/:bookmarkId
-// @desc    Delete a bookmark
-// @access  Private
 router.delete("/:bookmarkId", auth, limiter, async (req, res) => {
   try {
     const bookmark = await Bookmark.findById(req.params.bookmarkId);
     if (!bookmark) {
       return res.status(404).json({ message: "Bookmark not found" });
     }
-    // Additional check to verify user owns this bookmark
     if (bookmark.userId !== req.user.id && req.user.role !== "admin") {
       return res
         .status(403)

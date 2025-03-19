@@ -4,7 +4,6 @@ const cron = require("node-cron");
 const fs = require("fs");
 const path = require("path");
 const Contest = require("../models/Contest");
-const { fetchCodechefContestsWithPuppeteer } = require("./codechefPuppeteer");
 const setupLogDirectory = () => {
   const logDir = path.join(__dirname, "../logs");
   if (!fs.existsSync(logDir)) {
@@ -81,7 +80,7 @@ async function fetchAllContests() {
     const [codeforcesContests, codechefContests, leetcodeContests] =
       await Promise.allSettled([
         fetchCodeforcesContests(),
-        fetchCodechefContestsWithPuppeteer(),
+        fetchCodechefContests(),
         fetchLeetcodeContests(),
       ]);
     const results = {
@@ -357,224 +356,87 @@ async function fetchCodeforcesContests() {
 }
 async function fetchCodechefContests() {
   try {
-    console.log("Fetching CodeChef contests...");
-    const response = await fetchWithRetry("https://www.codechef.com/contests", {
-      headers: getBrowserHeaders("https://www.codechef.com"),
-      timeout: 15000,
-    });
-    logHtml(response.data, "codechef");
-    const $ = cheerio.load(response.data);
-    const contests = [];
-    console.log("CodeChef DOM structure analysis:");
-    const allTables = $("table");
-    console.log(`Found ${allTables.length} tables on CodeChef page`);
-    allTables.each((i, table) => {
-      const rows = $(table).find("tbody tr").length;
-      const caption =
-        $(table).find("caption").text().trim() ||
-        $(table).prev("h2").text().trim() ||
-        $(table).prev("h3").text().trim() ||
-        `Table ${i + 1}`;
-      console.log(`Table "${caption}": ${rows} rows`);
-    });
-    const contestContainers = $(
-      '[class*="contest"], [id*="contest"], [data-tab], .problems-table'
+    console.log("Fetching CodeChef contests from API...");
+    const response = await fetchWithRetry(
+      "https://www.codechef.com/api/list/contests/all",
+      {
+        headers: getBrowserHeaders("https://www.codechef.com"),
+        timeout: 15000,
+      }
     );
+    logObject(response.data, "codechef-api");
+    const apiData = response.data;
+    if (apiData.status !== "success") {
+      throw new Error(
+        `CodeChef API error: ${apiData.message || "Unknown error"}`
+      );
+    }
     console.log(
-      `Found ${contestContainers.length} potential contest containers`
+      `Fetched contests from CodeChef API: ${apiData.future_contests.length} future, ${apiData.present_contests.length} present, ${apiData.past_contests.length} past`
     );
-    $("table").each((tableIndex, table) => {
-      let type = "upcoming";
-      const container = $(table).closest(
-        '[class*="contest"], [id*="contest"], [data-tab]'
-      );
-      const containerClass = container.attr("class") || "";
-      const containerId = container.attr("id") || "";
-      const dataTab = container.attr("data-tab") || "";
-      if (
-        containerClass.includes("past") ||
-        containerId.includes("past") ||
-        dataTab === "past"
-      ) {
-        type = "past";
-      } else if (
-        containerClass.includes("present") ||
-        containerId.includes("present") ||
-        containerClass.includes("ongoing") ||
-        containerId.includes("ongoing") ||
-        dataTab === "present"
-      ) {
-        type = "ongoing";
-      } else if (
-        containerClass.includes("future") ||
-        containerId.includes("future") ||
-        dataTab === "future"
-      ) {
-        type = "upcoming";
-      }
-      const headerText = $(table).find("thead").text().toLowerCase();
-      if (headerText.includes("past")) {
-        type = "past";
-      } else if (
-        headerText.includes("ongoing") ||
-        headerText.includes("present")
-      ) {
-        type = "ongoing";
-      } else if (
-        headerText.includes("future") ||
-        headerText.includes("upcoming")
-      ) {
-        type = "upcoming";
-      }
-      console.log(
-        `Analyzing table ${tableIndex + 1} - identified as type: ${type}`
-      );
-      $(table)
-        .find("tbody tr")
-        .each((rowIndex, row) => {
-          try {
-            const cells = [];
-            $(row)
-              .find("td")
-              .each((i, cell) => {
-                cells.push($(cell).text().trim());
-              });
-            if (cells.length < 2) return;
-            console.log(
-              `Table ${tableIndex + 1}, Row ${rowIndex + 1} cells:`,
-              cells
-            );
-            let name = "";
-            let startTimeStr = "";
-            let endTimeStr = "";
-            let url = "";
-            url = $(row).find("a").attr("href") || "";
-            if (url && url.startsWith("/")) {
-              url = `https://www.codechef.com${url}`;
-            }
-            if (cells.length >= 1) {
-              const nameCell = $(row).find("td a").first();
-              if (nameCell.length) {
-                name = nameCell.text().trim();
-              } else {
-                name = cells[0];
-              }
-            }
-            const dateCells = [];
-            for (let i = 0; i < cells.length; i++) {
-              const cellText = cells[i];
-              if (
-                cellText.match(/\d{4}/) ||
-                cellText.match(
-                  /jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i
-                )
-              ) {
-                dateCells.push({ index: i, text: cellText });
-              }
-            }
-            if (dateCells.length >= 2) {
-              startTimeStr = dateCells[0].text;
-              endTimeStr = dateCells[1].text;
-            } else if (dateCells.length === 1) {
-              startTimeStr = dateCells[0].text;
-              const durationCell = cells.find(
-                (cell) =>
-                  cell.match(/\d+\s*days?/i) ||
-                  cell.match(/\d+\s*hours?/i) ||
-                  cell.match(/\d+\s*mins?/i) ||
-                  cell.match(/\d+:\d+/)
-              );
-              if (durationCell) {
-                console.warn(
-                  `Found duration but not end time: ${durationCell}`
-                );
-              }
-              if (!endTimeStr && dateCells[0].index + 1 < cells.length) {
-                endTimeStr = cells[dateCells[0].index + 1];
-              }
-            }
-            if (!name || !startTimeStr || !endTimeStr) {
-              console.warn(
-                `Skipping row ${rowIndex + 1} - missing essential data`
-              );
-              return;
-            }
-            const parseCodeChefDate = (dateStr) => {
-              if (!dateStr) return null;
-              dateStr = dateStr
-                .replace(/ IST/i, "")
-                .replace(/ GMT/i, "")
-                .trim();
-              const date = new Date(dateStr);
-              if (!isNaN(date.getTime())) {
-                return date;
-              }
-              const formats = [
-                /(\d{1,2})(?:st|nd|rd|th) (\w+) (\d{4}) (\d{1,2}):(\d{1,2}):(\d{1,2})/,
-                /(\w+) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{1,2}):(\d{1,2})/,
-                /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/,
-              ];
-              for (const format of formats) {
-                const match = dateStr.match(format);
-                if (match) {
-                  const reconstructed = `${match[2]} ${match[1]}, ${match[3]} ${match[4]}:${match[5]}:${match[6]}`;
-                  const parsedDate = new Date(reconstructed);
-                  if (!isNaN(parsedDate.getTime())) {
-                    return parsedDate;
-                  }
-                }
-              }
-              console.warn(`Failed to parse date: ${dateStr}`);
-              return null;
-            };
-            const startTime = parseCodeChefDate(startTimeStr);
-            const endTime = parseCodeChefDate(endTimeStr);
-            if (
-              !startTime ||
-              !endTime ||
-              isNaN(startTime.getTime()) ||
-              isNaN(endTime.getTime())
-            ) {
-              console.warn(
-                `Skipping contest with invalid dates: ${name}, ${startTimeStr}, ${endTimeStr}`
-              );
-              return;
-            }
-            const duration = Math.round((endTime - startTime) / (60 * 1000));
-            const now = new Date();
-            let status;
-            if (startTime > now) status = "upcoming";
-            else if (endTime > now) status = "ongoing";
-            else status = "past";
-            if (type !== status) {
-              console.log(
-                `Status mismatch for ${name}: Date-based status is ${status} but context suggests ${type}`
-              );
-            }
-            contests.push({
-              name,
-              platform: "CodeChef",
-              startTime,
-              endTime,
-              url,
-              status,
-              duration,
-            });
-            console.log(`Successfully parsed contest: ${name} (${status})`);
-          } catch (err) {
-            console.warn(`Error parsing row ${rowIndex + 1}:`, err.message);
-          }
+    const contests = [];
+    apiData.present_contests.forEach((contest) => {
+      try {
+        const startTime = new Date(contest.contest_start_date_iso);
+        const endTime = new Date(contest.contest_end_date_iso);
+        const duration = parseInt(contest.contest_duration);
+        contests.push({
+          name: contest.contest_name,
+          platform: "CodeChef",
+          startTime,
+          endTime,
+          url: `https://www.codechef.com/${contest.contest_code}`,
+          status: "ongoing",
+          duration,
         });
+      } catch (err) {
+        console.warn(`Error parsing ongoing CodeChef contest:`, err.message);
+      }
     });
-    console.log(`Fetched ${contests.length} contests from CodeChef`);
+    apiData.future_contests.forEach((contest) => {
+      try {
+        const startTime = new Date(contest.contest_start_date_iso);
+        const endTime = new Date(contest.contest_end_date_iso);
+        const duration = parseInt(contest.contest_duration);
+        contests.push({
+          name: contest.contest_name,
+          platform: "CodeChef",
+          startTime,
+          endTime,
+          url: `https://www.codechef.com/${contest.contest_code}`,
+          status: "upcoming",
+          duration,
+        });
+      } catch (err) {
+        console.warn(`Error parsing upcoming CodeChef contest:`, err.message);
+      }
+    });
+    apiData.past_contests.forEach((contest) => {
+      try {
+        const startTime = new Date(contest.contest_start_date_iso);
+        const endTime = new Date(contest.contest_end_date_iso);
+        const duration = parseInt(contest.contest_duration);
+        contests.push({
+          name: contest.contest_name,
+          platform: "CodeChef",
+          startTime,
+          endTime,
+          url: `https://www.codechef.com/${contest.contest_code}`,
+          status: "past",
+          duration,
+        });
+      } catch (err) {
+        console.warn(`Error parsing past CodeChef contest:`, err.message);
+      }
+    });
+    console.log(`Processed ${contests.length} contests from CodeChef API`);
     if (contests.length > 0) {
-      logObject(contests, "codechef-contests");
+      logObject(contests, "codechef-api-contests");
     }
     return contests;
   } catch (error) {
-    console.error("Error fetching CodeChef contests:", error.message);
+    console.error("Error fetching CodeChef contests from API:", error.message);
     console.error("Stack trace:", error.stack);
-    return [];
   }
 }
 async function fetchLeetcodeContests() {
