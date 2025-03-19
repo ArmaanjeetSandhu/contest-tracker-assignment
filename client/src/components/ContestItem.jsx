@@ -27,11 +27,6 @@ function ContestItem({ contest, isBookmarked, onBookmarkToggle }) {
   const endDate = React.useMemo(() => new Date(endTime), [endTime]);
   const formatDate = (date) => {
     const dateObj = new Date(date);
-    if (platform === "CodeChef") {
-      const fixedDate = new Date(dateObj);
-      fixedDate.setDate(fixedDate.getDate() + 1);
-      return format(fixedDate, "MMM dd, yyyy");
-    }
     return format(dateObj, "MMM dd, yyyy");
   };
   const formatTime = (date) => {
