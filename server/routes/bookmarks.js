@@ -43,8 +43,8 @@ router.post("/", auth, limiter, async (req, res) => {
     if (!contest) {
       return res.status(404).json({ message: "Contest not found" });
     }
-    if (typeof userId !== "string") {
-      return res.status(400).json({ message: "Invalid userId" });
+    if (typeof userId !== "string" || typeof contestId !== "string") {
+      return res.status(400).json({ message: "Invalid userId or contestId" });
     }
     const existingBookmark = await Bookmark.findOne({
       userId: userId,
@@ -83,8 +83,8 @@ router.post("/toggle", auth, limiter, async (req, res) => {
       return res.status(404).json({ message: "Contest not found" });
     }
     const existingBookmark = await Bookmark.findOne({
-      userId: userId,
-      contestId: contestId,
+      userId: { $eq: userId },
+      contestId: { $eq: contestId },
     });
     if (existingBookmark) {
       await Bookmark.findByIdAndDelete(existingBookmark._id);
