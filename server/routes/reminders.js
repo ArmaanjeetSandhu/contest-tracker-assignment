@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Reminder = require("../models/Reminder");
 const Contest = require("../models/Contest");
+const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
 const rateLimit = require("express-rate-limit");
 const limiter = rateLimit({
@@ -30,6 +31,9 @@ router.post("/", limiter, auth, async (req, res) => {
       return res
         .status(400)
         .json({ message: "userId, contestId, and reminderTime are required" });
+    }
+    if (!mongoose.isValidObjectId(contestId)) {
+      return res.status(400).json({ message: "Invalid contestId" });
     }
     const contest = await Contest.findById(contestId);
     if (!contest) {
